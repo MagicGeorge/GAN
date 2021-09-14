@@ -1,2 +1,2 @@
 Horses and Zebras Dataset
-The dataset can be downloaded from Kaggle: [link](https://www.kaggle.com/suyashdamle/cyclegan)
+The dataset can be downloaded from here: [link](http://efrosgans.eecs.berkeley.edu/cyclegan/datasets/horse2zebra.zip)

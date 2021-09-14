@@ -4,9 +4,9 @@
 # @File    : dataset.py
 import os
 import torch
+import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import transforms
 
 
 class HorseZebraDataset(Dataset):
@@ -33,11 +33,12 @@ class HorseZebraDataset(Dataset):
         zebra_path = os.path.join(self.root_zebra, zebra_name)
 
         horse_img = Image.open(horse_path)
-        zebra_img = Image.open(zebra_path)
+        zebra_img = Image.open(zebra_path).convert("RGB")
 
         if self.transform:
-            horse_img = self.transform(horse_img)
-            zebra_img = self.transform(zebra_img)
+            augmentations = self.transform(image=zebra_img, img0=horse_img)
+            horse_img = augmentations["images"]
+            zebra_img = self.transform["images0"]
 
         return horse_img, zebra_img
 

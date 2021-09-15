@@ -21,9 +21,12 @@ CHECKPOINT_GEN_Z = "genz.pth.tar"
 CHECKPOINT_DISC_H = "disch.pth.tar"
 CHECKPOINT_DISC_Z = "discz.pth.tar"
 
-transforms = A.Compose([
-    A.Resize(256, 256),
-    A.HorizontalFlip(p=0.5),  # 水平翻转，p参数指定进行翻转的概率
-    A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-    ToTensorV2()
-])
+transforms = A.Compose(
+    [
+        A.Resize(256, 256),
+        A.HorizontalFlip(p=0.5),  # 水平翻转，p参数指定进行翻转的概率
+        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        ToTensorV2()
+    ],
+    additional_targets={"image0": "image"}
+)

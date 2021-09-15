@@ -2,6 +2,7 @@
 # @Time    : 2021/9/1 19:34
 # @Author  : Wu Weiran
 # @File    : train.py
+import os
 import torch
 import config
 from tqdm import tqdm
@@ -59,8 +60,8 @@ def train_fn(disc_H, disc_Z, gen_H, gen_Z, data_loader, opt_disc, opt_gen, l1, m
         # Train the Generator H and Z
         with torch.cuda.amp.autocast():
             # adversarial loss for both generator
-            D_H_fake = disc_H(gen_H)
-            D_Z_fake = disc_Z(gen_Z)
+            D_H_fake = disc_H(fake_horse)
+            D_Z_fake = disc_Z(fake_zebra)
             G_H_loss = mse(D_H_fake, torch.ones_like(D_H_fake))
             G_Z_loss = mse(D_Z_fake, torch.ones_like(D_Z_fake))
 
@@ -79,6 +80,9 @@ def train_fn(disc_H, disc_Z, gen_H, gen_Z, data_loader, opt_disc, opt_gen, l1, m
         g_scaler.update()
 
         if (i % 200) == 0:
+            if not os.path.exists("samples/epoch{}".format(epoch)):
+                os.makedirs("samples/epoch{}/horse".format(epoch))
+                os.makedirs("samples/epoch{}/zebra".format(epoch))
             save_image(denorm(fake_horse), "samples/epoch{}/horse/{}.png".format(epoch, i))
             save_image(denorm(fake_zebra), "samples/epoch{}/zebra/{}.png".format(epoch, i))
         loop.set_postfix(H_real=H_reals / (i + 1), H_fake=H_fakes / (i + 1))  # 设置进度条文字
@@ -127,7 +131,7 @@ def main():
     d_scaler = torch.cuda.amp.GradScaler()
     g_scaler = torch.cuda.amp.GradScaler()
 
-    for epoch in config.num_epoch:
+    for epoch in range(config.num_epoch):
         train_fn(disc_H, disc_Z, gen_H, gen_Z, data_loader, opt_disc, opt_gen, l1, mse, d_scaler, g_scaler, epoch)
 
         if config.SAVE_MODEL:

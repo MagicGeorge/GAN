@@ -3,7 +3,7 @@
 # @Author  : Wu Weiran
 # @File    : dataset.py
 import os
-import torch
+import config
 import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
@@ -32,13 +32,13 @@ class HorseZebraDataset(Dataset):
         horse_path = os.path.join(self.root_horse, horse_name)
         zebra_path = os.path.join(self.root_zebra, zebra_name)
 
-        horse_img = Image.open(horse_path)
-        zebra_img = Image.open(zebra_path).convert("RGB")
+        horse_img = np.array(Image.open(horse_path).convert('RGB'))
+        zebra_img = np.array(Image.open(zebra_path).convert('RGB'))
 
         if self.transform:
-            augmentations = self.transform(image=zebra_img, img0=horse_img)
-            horse_img = augmentations["images"]
-            zebra_img = self.transform["images0"]
+            augmentations = self.transform(image=horse_img, image0=zebra_img)
+            horse_img = augmentations["image"]
+            zebra_img = augmentations["image0"]
 
         return horse_img, zebra_img
 
@@ -46,9 +46,8 @@ class HorseZebraDataset(Dataset):
 if __name__ == '__main__':
     horse_path = "../data/horse2zebra/train/horse"
     zebra_path = "../data/horse2zebra/train/zebra"
-    dataset = HorseZebraDataset(horse_path, zebra_path)
+    dataset = HorseZebraDataset(horse_path, zebra_path, config.transforms)
 
     horse, zebra = dataset[0]
-
-    print(horse)
-    print(zebra)
+    print(horse.shape)
+    print(zebra.shape)

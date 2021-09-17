@@ -112,8 +112,8 @@ def main():
         lr=config.learning_rate,
         betas=(0.5, 0.999)
     )
-    sch_disc = torch.optim.lr_scheduler.LambdaLR(opt_disc, lambda_decay)
-    sch_gen = torch.optim.lr_scheduler.LambdaLR(opt_gen, lambda_decay)
+    # sch_disc = torch.optim.lr_scheduler.LambdaLR(opt_disc, lambda_decay)
+    # sch_gen = torch.optim.lr_scheduler.LambdaLR(opt_gen, lambda_decay)
 
     l1 = nn.L1Loss()  # 用于循环一致性损失
     mse = nn.MSELoss()  # 用于最小二乘形式的对抗损失
@@ -142,21 +142,21 @@ def main():
     d_scaler = torch.cuda.amp.GradScaler()
     g_scaler = torch.cuda.amp.GradScaler()
 
-    lr_list = []
+    # lr_list = []
     for epoch in range(config.num_epoch):
         train_fn(disc_H, disc_Z, gen_H, gen_Z, data_loader, opt_disc, opt_gen, l1, mse, d_scaler, g_scaler, epoch)
-        sch_disc.step()  # 更新学习率
-        sch_gen.step()
-        lr_list.append(opt_gen.state_dict()['param_groups'][0]['lr'])
+        # sch_disc.step()  # 更新学习率
+        # sch_gen.step()
+        # lr_list.append(opt_gen.state_dict()['param_groups'][0]['lr'])
 
         if config.SAVE_MODEL:
             save_checkpoint(gen_H, opt_gen, filename=config.CHECKPOINT_GEN_H)
             save_checkpoint(gen_Z, opt_gen, filename=config.CHECKPOINT_GEN_Z)
             save_checkpoint(disc_H, opt_disc, filename=config.CHECKPOINT_DISC_H)
             save_checkpoint(disc_Z, opt_disc, filename=config.CHECKPOINT_DISC_Z)
-    plt.plot(range(config.num_epoch), lr_list, color='r', label="learning rate of generator")
-    plt.legend()
-    plt.show()
+    # plt.plot(range(config.num_epoch), lr_list, color='r', label="learning rate of generator")
+    # plt.legend()
+    # plt.show()
 
 
 if __name__ == '__main__':

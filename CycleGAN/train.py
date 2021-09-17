@@ -154,7 +154,8 @@ def main():
             save_checkpoint(gen_Z, opt_gen, filename=config.CHECKPOINT_GEN_Z)
             save_checkpoint(disc_H, opt_disc, filename=config.CHECKPOINT_DISC_H)
             save_checkpoint(disc_Z, opt_disc, filename=config.CHECKPOINT_DISC_Z)
-    plt.plot(range(config.num_epoch), lr_list, color='r')
+    plt.plot(range(config.num_epoch), lr_list, color='r', label="learning rate of generator")
+    plt.legend()
     plt.show()
 
 

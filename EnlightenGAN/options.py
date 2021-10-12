@@ -14,6 +14,7 @@ class BaseOptions():
                                  help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--data_root', default='../data/enlightengan',
                                  help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
+        self.parser.add_argument('--fineSize', type=int, default=320, help='then crop to this size')
         self.parser.add_argument('--patchSize', type=int, default=32, help='then crop to this size')
         self.parser.add_argument('--use_norm', action='store_true', help='#')
         self.parser.add_argument('--use_wgan', type=float, default=0, help='use wgan-gp')
@@ -34,9 +35,12 @@ class BaseOptions():
         self.parser.add_argument('--only_lsgan', action='store_true', help='use lsgan and ragan separately')
         self.parser.add_argument('--D_P_times2', action='store_true', help='loss_D_P *= 2')
         self.parser.add_argument('--mult_attention', action='store_true', help='#')
-        self.parser.add_argument('--residual_skip', action='store_true', help='#')
+        self.parser.add_argument('--residual_skip', type=float, default=0.8, help='B = net(A) + skip*A')
         self.parser.add_argument('--linear_stretch', action='store_true', help='#')
         self.parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
+        self.parser.add_argument('--display_id', type=int, default=1, help='window id of the web display')
+        self.parser.add_argument('--display_winsize', type=int, default=256, help='display window size')
+        self.parser.add_argument('--display_port', type=int, default=8097, help='visdom port of the web display')
         self.initialized = True
 
     def parse(self):

@@ -15,9 +15,9 @@ class SingleModel():
         self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
         self.Tensor = torch.FloatTensor
         self.isTrain = opt.isTrain
-        self.input_A = self.Tensor(opt.batch_size, 3, 256, 256).to(self.device)
-        self.input_B = self.Tensor(opt.batch_size, 3, 256, 256).to(self.device)
-        self.input_A_gray = self.Tensor(opt.batch_size, 1, 256, 256).to(self.device)
+        self.input_A = self.Tensor(opt.batch_size, 3, opt.fineSize, opt.fineSize).to(self.device)
+        self.input_B = self.Tensor(opt.batch_size, 3, opt.fineSize, opt.fineSize).to(self.device)
+        self.input_A_gray = self.Tensor(opt.batch_size, 1, opt.fineSize, opt.fineSize).to(self.device)
         self.image_paths = ''
 
         self.vgg_loss = loss.PerceptualLoss(opt)
@@ -109,7 +109,7 @@ class SingleModel():
         if self.opt.only_lsgan:
             loss_D_P = self.backward_D_basic(self.netD_P, self.real_patch, self.enhance_patch, False)
             if self.opt.n_patchD > 0:
-                for i in range(self.opt.patchD_3):
+                for i in range(self.opt.n_patchD):
                     loss_D_P += self.backward_D_basic(self.netD_P, self.real_patch_1[i], self.enhance_patch_1[i], False)
                 self.loss_D_P = loss_D_P/float(self.opt.n_patchD + 1)
             else:
@@ -235,6 +235,9 @@ class SingleModel():
             self.backward_D_P()
             self.optimizer_D_A.step()
             self.optimizer_D_P.step()
+
+    def get_current_visuals(self):
+        pass
 
     # helper saving function
     def save_network(self, network, network_label, epoch_label):

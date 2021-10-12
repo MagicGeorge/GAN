@@ -6,6 +6,7 @@ from utils import util
 from utils.image_pool import ImagePool
 import generator_model as Gen
 import discriminator_model as Disc
+from collections import OrderedDict
 
 
 class SingleModel():
@@ -15,9 +16,9 @@ class SingleModel():
         self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
         self.Tensor = torch.FloatTensor
         self.isTrain = opt.isTrain
-        self.input_A = self.Tensor(opt.batch_size, 3, 256, 256).to(self.device)
-        self.input_B = self.Tensor(opt.batch_size, 3, 256, 256).to(self.device)
-        self.input_A_gray = self.Tensor(opt.batch_size, 1, 256, 256).to(self.device)
+        self.input_A = self.Tensor(opt.batch_size, 3, opt.fineSize, opt.fineSize).to(self.device)
+        self.input_B = self.Tensor(opt.batch_size, 3, opt.fineSize, opt.fineSize).to(self.device)
+        self.input_A_gray = self.Tensor(opt.batch_size, 1, opt.fineSize, opt.fineSize).to(self.device)
         self.image_paths = ''
 
         self.vgg_loss = loss.PerceptualLoss(opt)
@@ -81,6 +82,23 @@ class SingleModel():
         self.input_B.resize_(input_B.size()).copy_(input_B)
         self.image_paths = input['A_path']
 
+    def predict(self):
+        with torch.no_grad():
+            self.real_A = self.input_A
+            self.real_A_gray = self.input_A_gray
+            if self.opt.linear_stretch:
+                self.real_A = (self.real_A - torch.min(self.real_A)) / (torch.max(self.real_A) - torch.min(self.real_A))
+            self.enhance_A = self.netG_A.forward(self.real_A, self.real_A_gray)
+
+            real_A = util.tensor2im(self.real_A.data)
+            enhance_A = util.tensor2im(self.enhance_A.data)
+            # A_gray = util.atten2im(self.real_A_gray.data)
+
+            return OrderedDict([('real_A', real_A), ('enhance_A', enhance_A)])
+
+    def get_image_paths(self):
+        return self.image_paths
+
     def backward_D_basic(self, netD, real, fake, use_ragan):
         # Real
         pred_real = netD(real)
@@ -109,9 +127,9 @@ class SingleModel():
         if self.opt.only_lsgan:
             loss_D_P = self.backward_D_basic(self.netD_P, self.real_patch, self.enhance_patch, False)
             if self.opt.n_patchD > 0:
-                for i in range(self.opt.patchD_3):
+                for i in range(self.opt.n_patchD):
                     loss_D_P += self.backward_D_basic(self.netD_P, self.real_patch_1[i], self.enhance_patch_1[i], False)
-                self.loss_D_P = loss_D_P/float(self.opt.n_patchD + 1)
+                self.loss_D_P = loss_D_P / float(self.opt.n_patchD + 1)
             else:
                 self.loss_D_P = loss_D_P
         else:
@@ -119,7 +137,7 @@ class SingleModel():
             if self.opt.n_patchD > 0:
                 for i in range(self.opt.n_patchD):
                     loss_D_P += self.backward_D_basic(self.netD_P, self.real_patch_1[i], self.enhance_patch_1[i], True)
-                self.loss_D_P = loss_D_P/float(self.opt.n_patchD + 1)
+                self.loss_D_P = loss_D_P / float(self.opt.n_patchD + 1)
             else:
                 self.loss_D_P = loss_D_P
         if self.opt.D_P_times2:
@@ -235,6 +253,13 @@ class SingleModel():
             self.backward_D_P()
             self.optimizer_D_A.step()
             self.optimizer_D_P.step()
+
+    def get_current_errors(self, epoch):
+        D_A = self.loss_D_A.item()
+        D_P = self.loss_D_P.item() if self.opt.patchD else 0
+        G = self.loss_G.item()
+        vgg = self.loss_vgg.item()
+        return OrderedDict([('D_A', D_A), ('G', G), ("vgg", vgg), ("D_P", D_P)])
 
     # helper saving function
     def save_network(self, network, network_label, epoch_label):

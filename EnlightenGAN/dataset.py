@@ -9,10 +9,11 @@ from torch.utils.data import Dataset
 
 
 class CustomDataset(Dataset):
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, size):
         super(CustomDataset, self).__init__()
 
         self.root_dir = root_dir
+        self.img_size = size
         self.lol_dir = os.path.join(self.root_dir, 'trainA')  # 训练图像中的低光图像路径
         self.norm_dir = os.path.join(self.root_dir, 'trainB')  # 训练图像中的正常光图像路径
         self.low_light = os.listdir(self.lol_dir)
@@ -36,7 +37,7 @@ class CustomDataset(Dataset):
 
         transform = A.Compose(
             [
-                A.RandomCrop(256, 256),
+                A.RandomCrop(self.img_size, self.img_size),
                 A.HorizontalFlip(p=0.5),
                 A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
                 ToTensorV2()
@@ -64,7 +65,7 @@ class CustomDataset(Dataset):
 
 if __name__ == '__main__':
     root_dir = "../data/enlightengan"
-    dataset = CustomDataset(root_dir)
+    dataset = CustomDataset(root_dir, 320)
 
-    lol, norm, gray = dataset[0]
-    print(lol.shape)
+    data = dataset[0]
+    print(data['A'].shape)

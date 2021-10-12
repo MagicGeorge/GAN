@@ -14,6 +14,7 @@ class BaseOptions():
                                  help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--data_root', default='../data/enlightengan',
                                  help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
+        self.parser.add_argument('--fineSize', type=int, default=320, help='then crop to this size')
         self.parser.add_argument('--patchSize', type=int, default=32, help='then crop to this size')
         self.parser.add_argument('--use_norm', action='store_true', help='#')
         self.parser.add_argument('--use_wgan', type=float, default=0, help='use wgan-gp')
@@ -34,9 +35,14 @@ class BaseOptions():
         self.parser.add_argument('--only_lsgan', action='store_true', help='use lsgan and ragan separately')
         self.parser.add_argument('--D_P_times2', action='store_true', help='loss_D_P *= 2')
         self.parser.add_argument('--mult_attention', action='store_true', help='#')
-        self.parser.add_argument('--residual_skip', action='store_true', help='#')
+        self.parser.add_argument('--residual_skip', type=float, default=0.8, help='B = net(A) + skip*A')
         self.parser.add_argument('--linear_stretch', action='store_true', help='#')
         self.parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
+        self.parser.add_argument('--display_id', type=int, default=1, help='window id of the web display')
+        self.parser.add_argument('--display_winsize', type=int, default=256, help='display window size')
+        self.parser.add_argument('--display_port', type=int, default=8097, help='visdom port of the web display')
+        self.parser.add_argument('--display_single_pane_ncols', type=int, default=0,
+                                 help='if positive, display all images in a single visdom web panel with certain number of images per row.')
         self.initialized = True
 
     def parse(self):
@@ -86,4 +92,19 @@ class TrainOptions(BaseOptions):
                                  help='frequency of saving the latest results')
         self.parser.add_argument('--save_epoch_freq', type=int, default=5,
                                  help='frequency of saving checkpoints at the end of epochs')
+        self.parser.add_argument('--print_freq', type=int, default=100,
+                                 help='frequency of showing training results on console')
         self.isTrain = True
+
+
+class TestOptions(BaseOptions):
+    def initialize(self):
+        BaseOptions.initialize(self)
+        # self.parser.add_argument('--ntest', type=int, default=float("inf"), help='# of test examples.')
+        # self.parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
+        # self.parser.add_argument('--aspect_ratio', type=float, default=1.0, help='aspect ratio of result images')
+        # self.parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
+        self.parser.add_argument('--which_epoch', type=str, default='latest',
+                                 help='which epoch to load? set to latest to use latest cached model')
+        # self.parser.add_argument('--how_many', type=int, default=50, help='how many test images to run')
+        self.isTrain = False
